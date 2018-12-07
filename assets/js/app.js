@@ -124,6 +124,7 @@ d3.csv("./assets/data/data.csv", (error, data) => {
             .attr("y", d => yCurrent(d[yKeys[y]]) + 4) // Anchor middle not centering Y coord?
             .text(d => `${d.abbr}`);
     
+    // Place X axis options on chart
     var xOptionsGrp = chtGrp.append("g")
         .attr("transform", `translate(${chtWdt/2}, ${chtHgt + 20})`);
     
@@ -135,4 +136,17 @@ d3.csv("./assets/data/data.csv", (error, data) => {
             .attr("value", (d,i) => i)
             .attr("class", (d,i) => (i == x) ? "active" : "inactive")
             .text(d => d);
+    
+    // Place Y axis options on chart
+    var yOptionsGrp = chtGrp.append("g")
+        .attr("transform", "rotate(-90)");
+    
+    yOptionsGrp.selectAll("text").data(yLbls)
+        .enter()
+        .append("text")
+        .attr("x", (0 - (chtHgt / 2)))
+        .attr("y", (d,i) => 0 - (2-i)*20 - 30)
+        .attr("value", (d,i) => i)
+        .attr("class", (d,i) => (i == y) ? "active" : "inactive")
+        .text(d => d);
 });
