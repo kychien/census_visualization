@@ -38,21 +38,49 @@ function yScale(data, key) {
 }
 
 // Function to update the X axis on selection change
-function updateBotAxis(scale, axis) {
-    var botAx = d3.axisBottom(scale);
+function updateBotAxis(nScale, xAxis) {
+    // Create new axis
+    var botRule = d3.axisBottom(nScale);
+    // Transition to new axis
+    xAxis.transition().duration(1000).call(botRule);
 
-    axis.transition().duration(1000).call(botAx);
-
-    return axis;
+    return xAxis;
 }
 
 // Function to update the Y axis on selection change
-function updateLeftAxis(scale, axis) {
-    var leftAx = d3.axisLeft(scale);
+function updateLftAxis(nScale, yAxis) {
+    // Create new axis
+    var lftRule = d3.axisLeft(nScale);
+    // Transitiont to new axis
+    yAxis.transition().duration(1000).call(lftRule);
 
-    axis.transition().duration(1000).call(leftAx);
+    return yAxis;
+}
 
-    return axis;
+function updateXPlots(plotGrp, lblsGrp, xTrans, key) {
+    // Move circles
+    plotGrp.transition()
+        .duration(1000)
+        .attr("cx", d => xTrans(d[key]));
+    // Move labels
+    lblsGrp.transition()
+        .duration(1000)
+        .attr("x", d => xTrans(d[key]));
+    
+    return plotGrp;
+}
+
+function updateYPlots(plotGrp, lblsGrp, yTrans, key) {
+    // Move circles
+    plotGrp.transition()
+        .duration(1000)
+        .attr("cy", d => yTrans(d[key]));
+    // Move labels
+    lblsGrp.transition()
+        .duration(1000)
+        .attr("y", d => yTrans(d[key]) + 4);
+    
+    return plotGrp;
 }
 
 // Open csv to get source data
@@ -90,14 +118,14 @@ d3.csv("./assets/data/data.csv", (error, data) => {
     var y = 2;
 
     // set X scales
-    var xCurrent = xScale(data, xKeys[x]);
+    var xCurScale = xScale(data, xKeys[x]);
     
     // set Y scales
-    var yCurrent = yScale(data, yKeys[y]);
+    var yCurScale = yScale(data, yKeys[y]);
 
     // Create axes
-    var botRule = d3.axisBottom(xCurrent);
-    var lftRule = d3.axisLeft(yCurrent);
+    var botRule = d3.axisBottom(xCurScale);
+    var lftRule = d3.axisLeft(yCurScale);
 
     // Add axes to chart
     var yAxis = chtGrp.append("g").attr("class", "axis")
@@ -111,17 +139,18 @@ d3.csv("./assets/data/data.csv", (error, data) => {
         .enter()
         .append("circle")
             .attr("class", "stateCircle")
-            .attr("cx", d => xCurrent(d[xKeys[x]]))
-            .attr("cy", d => yCurrent(d[yKeys[y]]))
+            .attr("cx", d => xCurScale(d[xKeys[x]]))
+            .attr("cy", d => yCurScale(d[yKeys[y]]))
             .attr("r", 15)
             .attr("opacity", ".66");
+
     // Add State abbreviations 
     var lblsGrp = chtGrp.selectAll(".abbr").data(data)
         .enter()
         .append("text")
             .attr("class", "abbr stateText")
-            .attr("x", d => xCurrent(d[xKeys[x]]))
-            .attr("y", d => yCurrent(d[yKeys[y]]) + 4) // Anchor middle not centering Y coord?
+            .attr("x", d => xCurScale(d[xKeys[x]]))
+            .attr("y", d => yCurScale(d[yKeys[y]]) + 4) // Anchor middle not centering Y coord?
             .text(d => `${d.abbr}`);
     
     // Place X axis options on chart
@@ -144,9 +173,54 @@ d3.csv("./assets/data/data.csv", (error, data) => {
     yOptionsGrp.selectAll("text").data(yLbls)
         .enter()
         .append("text")
-        .attr("x", (0 - (chtHgt / 2)))
-        .attr("y", (d,i) => 0 - (2-i)*20 - 30)
-        .attr("value", (d,i) => i)
-        .attr("class", (d,i) => (i == y) ? "active" : "inactive")
-        .text(d => d);
+            .attr("x", (0 - (chtHgt / 2)))
+            .attr("y", (d,i) => 0 - (2-i)*20 - 30)
+            .attr("value", (d,i) => i)
+            .attr("class", (d,i) => (i == y) ? "active" : "inactive")
+            .text(d => d);
+    
+    // Axis event listeners
+    xOptionsGrp.selectAll("text").on("click", function() {
+        // Check what was clicked
+        var k = d3.select(this).attr("value");
+
+        // Update if new
+        if (k !== x) {
+            // Change active label
+            xOptionsGrp.selectAll("text")
+                .attr("class", (d,i) => (i == k) ? "active" : "inactive");
+            // Change active x index
+            x = k;
+            // Update scale
+            xCurScale = xScale(data, xKeys[x]);
+
+            // Update x axis
+            xAxis = updateBotAxis(xCurScale, xAxis);
+
+            // Move plots and abbreviations accordingly
+            plotGrp = updateXPlots(plotGrp, lblsGrp, xCurScale, xKeys[x]);
+        }
+    });
+    yOptionsGrp.selectAll("text").on("click", function() {
+        // Check what was clicked
+        var k = d3.select(this).attr("value");
+
+        // Update if new
+        if (k !== y) {
+            // Change active label
+            yOptionsGrp.selectAll("text")
+                .attr("class", (d,i) => (i == k) ? "active" : "inactive");
+            // Change active y index
+            y = k;
+            // Update scale
+            yCurScale = yScale(data, yKeys[y]);
+
+            // Update y axis
+            yAxis = updateLftAxis(yCurScale, yAxis);
+
+            // Move plots and abbreviations accordingly
+            plotGrp = updateYPlots(plotGrp, lblsGrp, yCurScale, yKeys[y]);
+        }
+    });
+
 });
