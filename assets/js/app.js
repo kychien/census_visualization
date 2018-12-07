@@ -84,13 +84,13 @@ function updateYPlots(plotGrp, lblsGrp, yTrans, key) {
 }
 
 function updateToolTips(xKey, yKey, plotGrp, lblsGrp){
-    var xDesc = "Median Household Income: $";
+    var xDesc = "Household Income: $";
     var xTail = "";
     var yDesc = "Uninsured: ";
     var yTail = "%";
     switch (xKey) {
         case "poverty":
-            xDesc = "Poverty Level: ";
+            xDesc = "Poverty: ";
             xTail = "%";
             break;
         case "age":
@@ -99,16 +99,16 @@ function updateToolTips(xKey, yKey, plotGrp, lblsGrp){
     }
     switch (yKey) {
         case "obesity":
-            yDesc = "Classified as Obese: ";
+            yDesc = "Obesity: ";
             break;
         case "smokes":
-            yDesc = "Classified as Smoker: ";
+            yDesc = "Smoker: ";
             break;
     }
     var toolTip = d3.tip()
         .attr("class", "tooltip d3-tip")
-        .offset([80, -60])
-        .html(d => `${d.state}<hr>${xDesc}${d[xKey]}${xTail}<br>${yDesc}${d[yKey]}${yTail}`);
+        .offset([88, -60])
+        .html(d => `${d.state}<br>${xDesc}${d[xKey]}${xTail}<br>${yDesc}${d[yKey]}${yTail}`);
     
     // plotGrp.call(toolTip);
 
@@ -138,11 +138,8 @@ d3.csv("./assets/data/data.csv", (error, data) => {
     // convert strings to numbers
     data.forEach(row => {
         row.poverty = +row.poverty;
-        row.povertyMoe = +row.povertyMoe;
         row.age = +row.age;
-        row.ageMoe = +row.ageMoe;
         row.income = +row.income;
-        row.incomeMoe = +row.incomeMoe;
         row.noHealthInsurance = +row.noHealthInsurance;
         row.obesity = +row.obesity;
         row.smokes = +row.smokes;
