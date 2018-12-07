@@ -115,13 +115,24 @@ d3.csv("./assets/data/data.csv", (error, data) => {
             .attr("cy", d => yCurrent(d[yKeys[y]]))
             .attr("r", 15)
             .attr("opacity", ".66");
+    // Add State abbreviations 
     var lblsGrp = chtGrp.selectAll(".abbr").data(data)
         .enter()
         .append("text")
-            .attr("x", d => xCurrent(d[xKeys[x]]))
-            .attr("y", d => yCurrent(d[yKeys[y]]) + 4)
             .attr("class", "abbr stateText")
+            .attr("x", d => xCurrent(d[xKeys[x]]))
+            .attr("y", d => yCurrent(d[yKeys[y]]) + 4) // Anchor middle not centering Y coord?
             .text(d => `${d.abbr}`);
     
+    var xOptionsGrp = chtGrp.append("g")
+        .attr("transform", `translate(${chtWdt/2}, ${chtHgt + 20})`);
     
+    xOptionsGrp.selectAll("text").data(xLbls)
+        .enter()
+        .append("text")
+            .attr("x", 0)
+            .attr("y", (d,i) => (i+1)*20)
+            .attr("value", (d,i) => i)
+            .attr("class", (d,i) => (i == x) ? "active" : "inactive")
+            .text(d => d);
 });
