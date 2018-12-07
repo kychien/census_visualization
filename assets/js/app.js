@@ -83,6 +83,48 @@ function updateYPlots(plotGrp, lblsGrp, yTrans, key) {
     return plotGrp;
 }
 
+function updateToolTips(xKey, yKey, plotGrp, lblsGrp){
+    var xDesc = "Median Household Income: $";
+    var xTail = "";
+    var yDesc = "Uninsured: ";
+    var yTail = "%";
+    switch (xKey) {
+        case "poverty":
+            xDesc = "Poverty Level: ";
+            xTail = "%";
+            break;
+        case "age":
+            xDesc = "Median Age: ";
+            break;
+    }
+    switch (yKey) {
+        case "obesity":
+            yDesc = "Classified as Obese: ";
+            break;
+        case "smokes":
+            yDesc = "Classified as Smoker: ";
+            break;
+    }
+    var toolTip = d3.tip()
+        .attr("class", "tooltip d3-tip")
+        .offset([80, -60])
+        .html(d => `${d.state}<hr>${xDesc}${d[xKey]}${xTail}<br>${yDesc}${d[yKey]}${yTail}`);
+    
+    // plotGrp.call(toolTip);
+
+    // plotGrp
+    //     .on("mouseover", d => toolTip.show(d))
+    //     .on("mouseout", d => toolTip.hide(d));
+
+    lblsGrp.call(toolTip);
+
+    lblsGrp
+        .on("mouseover", d => toolTip.show(d))
+        .on("mouseout", d => toolTip.hide(d));
+    
+    return plotGrp;
+}
+
 // Open csv to get source data
 d3.csv("./assets/data/data.csv", (error, data) => {
     
@@ -153,6 +195,9 @@ d3.csv("./assets/data/data.csv", (error, data) => {
             .attr("y", d => yCurScale(d[yKeys[y]]) + 4) // Anchor middle not centering Y coord?
             .text(d => `${d.abbr}`);
     
+    // Add Tooltips
+    plotGrp = updateToolTips(xKeys[x], yKeys[y], plotGrp, lblsGrp);
+    
     // Place X axis options on chart
     var xOptionsGrp = chtGrp.append("g")
         .attr("transform", `translate(${chtWdt/2}, ${chtHgt + 20})`);
@@ -199,6 +244,9 @@ d3.csv("./assets/data/data.csv", (error, data) => {
 
             // Move plots and abbreviations accordingly
             plotGrp = updateXPlots(plotGrp, lblsGrp, xCurScale, xKeys[x]);
+
+            // Update tooltips
+            plotGrp = updateToolTips(xKeys[x], yKeys[y], plotGrp, lblsGrp);
         }
     });
     yOptionsGrp.selectAll("text").on("click", function() {
@@ -220,6 +268,9 @@ d3.csv("./assets/data/data.csv", (error, data) => {
 
             // Move plots and abbreviations accordingly
             plotGrp = updateYPlots(plotGrp, lblsGrp, yCurScale, yKeys[y]);
+
+            // Update tooltips
+            plotGrp = updateToolTips(xKeys[x], yKeys[y], plotGrp, lblsGrp);
         }
     });
 
